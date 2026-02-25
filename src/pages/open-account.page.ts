@@ -75,4 +75,12 @@ export class OpenAccountPage extends BasePage {
         await expect(this.successMessage).toHaveText('Account Opened!');
         await expect(this.newAccountId).toBeVisible();
     }
+
+    /**
+     * Assert that the provided account number string is valid (contains only digits).
+     */
+    async expectValidAccountNumberString(accountNumber: string): Promise<void> {
+        expect(accountNumber).toBeTruthy();
+        expect(accountNumber).toMatch(/^\d+$/);
+    }
 }
