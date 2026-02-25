@@ -29,7 +29,15 @@ cd parabank-qa-automation
 npm ci
 ```
 
-### 3. Install Playwright Chrome browser
+### 3. Setup environment variables
+
+Create a `.env` file from the provided example. The following command works across different Operating Systems (Windows, macOS, Linux):
+
+```bash
+node -e "fs.copyFileSync('.env.example', '.env')"
+```
+
+### 4. Install Playwright Chrome browser
 
 ```bash
 npx playwright install chrome --with-deps
@@ -82,7 +90,25 @@ parabank-qa-automation/
 
 ## CI / GitHub Actions
 
-Tests are automatically executed via GitHub Actions on every push or pull request to the `main` branch. The HTML report is uploaded as an artifact and retained for **30 days**.
+Tests are automatically executed via GitHub Actions on **every single commit/push** to the repository. The workflow runs the full E2E setup combining both the UI and API validation phases.
+
+### Email Reports
+
+After execution, the CI matrix parses the test results and sends an email report detailing:
+- Total tests executed
+- Number of passed and failed tests
+- A direct link to the logs and screenshots of failures
+- A summary of any flaky or retried tests
+
+**To activate this feature**, make sure to configure the corresponding Repository Secrets in your GitHub repo settings (`Settings` > `Secrets and variables` > `Actions`):
+
+- `SMTP_SERVER`: e.g. `smtp.gmail.com`
+- `SMTP_PORT`: e.g. `465` or `587`
+- `SMTP_USERNAME`: Your SMTP username/email
+- `SMTP_PASSWORD`: Your SMTP app password
+- `EMAIL_RECIPIENT`: The email address to send the report to
+
+_Note: If secrets are omitted, the email step may fail, but the execution artifacts (logs, HTML report) will still be saved._ The HTML report is uploaded as an artifact and retained for 30 days.
 
 ---
 
