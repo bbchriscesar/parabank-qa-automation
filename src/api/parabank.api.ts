@@ -1,11 +1,3 @@
-/**
- * ParaBankAPI — API helper for the hybrid test framework.
- *
- * Uses Playwright's APIRequestContext to perform API calls for:
- * - User registration (hybrid: API signup, UI validation)
- * - Finding transactions by amount
- */
-
 import { APIRequestContext, Page, expect } from '@playwright/test';
 import { UserRegistrationData } from '../data/user.data';
 
@@ -68,6 +60,8 @@ export class ParaBankAPI {
             maxRedirects: 0,
         });
 
+        expect(response.ok(), `API registration failed with status ${response.status()}`).toBeTruthy();
+
         return response;
     }
 
@@ -93,6 +87,8 @@ export class ParaBankAPI {
             }
         );
 
+        expect(response.ok(), `API findTransactionsByAmount failed with status ${response.status()}`).toBeTruthy();
+
         const body = await response.json();
         return { response, body };
     }
@@ -116,6 +112,8 @@ export class ParaBankAPI {
                 },
             }
         );
+
+        expect(response.ok(), `API getAllTransactions failed with status ${response.status()}`).toBeTruthy();
 
         const body = await response.json();
         return { response, body };
@@ -192,6 +190,8 @@ export class ParaBankAPI {
                 },
             }
         );
+
+        expect(response.ok(), `API getAccountDetails failed with status ${response.status()}`).toBeTruthy();
 
         const body = await response.json();
         return { response, body };

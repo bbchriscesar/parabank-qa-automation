@@ -119,7 +119,7 @@ async function main() {
         console.log('Sending email via Resend...');
         try {
             const data = await resend.emails.send({
-                from: 'onboarding@resend.dev',
+                from: 'Playwright CI <reports@christiannecesar.online>',
                 to: process.env.EMAIL_RECIPIENT,
                 subject: 'Playwright E2E UI + API Test Results',
                 text: body,
