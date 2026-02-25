@@ -11,7 +11,7 @@ dotenv.config();
 
 /* ── Toggle headless mode ── */
 /* Set to `false` to see the browser UI, `true` to run headless */
-const HEADLESS = false;
+const HEADLESS = true;
 export default defineConfig({
   testDir: './tests',
   fullyParallel: false, // Tests have sequential dependencies
