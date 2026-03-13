@@ -111,4 +111,4 @@ _Note: If secrets are omitted, the email step may fail, but the execution artifa
 
 ## Browser
 
-This project is configured to run exclusively on **Google Chrome** across all platforms (Linux, macOS, Windows)
+This project is configured to run exclusively on **Google Chrome** across all platforms (Linux, macOS, Windows).
