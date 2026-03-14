@@ -105,7 +105,7 @@ After execution, the CI matrix parses the test results and sends an email report
 - `RESEND_API_KEY`: Your Resend API key
 - `EMAIL_RECIPIENT`: The email address to send the report to
 
-_Note: If secrets are omitted, the email step may fail, but the execution artifacts (logs, HTML report) will still be saved._ The HTML report is uploaded as an artifact and retained for 30 days.
+_Note: If secrets are omitted, the email step may fail, but the execution artifacts (logs, HTML report) will still be saved._ The HTML report is uploaded as an artifact and retained for 30 days..
 
 ---
 
