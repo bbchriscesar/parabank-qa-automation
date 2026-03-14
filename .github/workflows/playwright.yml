@@ -19,8 +19,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Google Chrome
-        run: npx playwright install chrome --with-deps
+      - name: Install Chromium
+        run: npx playwright install chromium --with-deps
 
       - name: Run Playwright complete UI + API test suite
         run: npx playwright test
