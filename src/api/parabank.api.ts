@@ -4,6 +4,8 @@ import { UserRegistrationData } from '../data/user.data';
 const BASE_URL = process.env.BASE_URL as string;
 
 export class ParaBankAPI {
+    // [INTERVIEW Q]: Why optionally pass `Page` to an API class?
+    // [ANSWER]: It allows the API to share the browser's context (cookies, session state). If only `request` is passed, the API calls execute in an isolated context and wouldn't be authenticated as the logged-in UI user.
     private request: APIRequestContext;
     private page?: Page;
 
@@ -35,6 +37,8 @@ export class ParaBankAPI {
         await page.goto(`${BASE_URL}/parabank/register.htm`);
         await page.waitForLoadState('networkidle');
 
+        // [INTERVIEW Q]: Why use `page.request` here instead of the global `this.request`?
+        // [ANSWER]: `page.request` is tied to the current browser page. This means the API POST will automatically include the cookies/session established by the `page.goto` in step 1, matching a hybrid UI/API test approach.
         // Step 2: POST form data using page.request (shares the browser's cookies/session)
         const formData = new URLSearchParams({
             'customer.firstName': user.firstName,
@@ -50,6 +54,8 @@ export class ParaBankAPI {
             'repeatedPassword': user.password,
         });
 
+        // [INTERVIEW Q]: What does `maxRedirects: 0` do here?
+        // [ANSWER]: Often in form submissions, success results in an HTTP 302 Redirect. Setting maxRedirects to 0 allows us to catch the 302 response itself without Playwright automatically following the redirect, though here we just assert .ok().
         const response = await page.request.post(`${BASE_URL}/parabank/register.htm`, {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -75,6 +81,8 @@ export class ParaBankAPI {
      * @returns The parsed JSON response array of transactions
      */
     async findTransactionsByAmount(accountId: string, amount: string) {
+        // [INTERVIEW Q]: Explain this fallback logic `this.page ? this.page.request : this.request`.
+        // [ANSWER]: If the class was initialized with a `page` (meaning part of a UI test), it uses `page.request` to inherit the UI's cookies. If it's a pure API test (no `page`), it falls back to the isolated `this.request` context.
         // Use page.request if available — it shares the browser's authenticated session/cookies.
         const reqContext = this.page ? this.page.request : this.request;
 
@@ -161,6 +169,8 @@ export class ParaBankAPI {
         expect(body.length).toBeGreaterThan(0);
 
         const transaction = body[0];
+        // [INTERVIEW Q]: Instead of using multiple expects, what's a more modern way to validate this payload?
+        // [ANSWER]: We could use structural validation with a schema validation library like Zod or AJV, or at least a single object match like `expect(transaction).toEqual(expect.objectContaining({ id: expect.any(String), accountId: expect.any(Number) ... }))`.
         expect(transaction).toHaveProperty('id');
         expect(transaction).toHaveProperty('accountId');
         expect(transaction).toHaveProperty('type');
