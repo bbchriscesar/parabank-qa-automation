@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ParaBank QA Automation — Architecture Deep-Dive</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f111a;
+            --surface: #1a1d2e;
+            --surface-2: #232740;
+            --border: #2e3350;
+            --text: #e2e8f0;
+            --text-muted: #94a3b8;
+            --accent: #818cf8;
+            --accent-dim: rgba(129, 140, 248, 0.12);
+            --green: #34d399;
+            --green-dim: rgba(52, 211, 153, 0.12);
+            --amber: #fbbf24;
+            --amber-dim: rgba(251, 191, 36, 0.12);
+            --red: #f87171;
+            --cyan: #22d3ee;
+            --pink: #f472b6;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+            padding: 0;
+        }
+
+        .hero {
+            background: linear-gradient(135deg, #1e1b4b 0%, #0f111a 50%, #0c1222 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 60px 40px 50px;
+            text-align: center;
+        }
+        .hero h1 {
+            font-size: 2.6rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #818cf8, #c084fc, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 12px;
+            letter-spacing: -0.5px;
+        }
+        .hero .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+        .hero .badge {
+            display: inline-block;
+            margin-top: 18px;
+            padding: 6px 16px;
+            border-radius: 20px;
+            background: var(--accent-dim);
+            color: var(--accent);
+            font-size: 0.82rem;
+            font-weight: 600;
+            border: 1px solid rgba(129, 140, 248, 0.25);
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px 32px 80px;
+        }
+
+        h2 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin: 50px 0 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--border);
+            color: #f1f5f9;
+        }
+        h2:first-child { margin-top: 0; }
+
+        h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 32px 0 14px;
+            color: var(--accent);
+        }
+
+        p { margin-bottom: 14px; color: var(--text-muted); }
+
+        .diagram-wrapper {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 40px 24px;
+            margin: 24px 0 32px;
+            overflow-x: auto;
+            text-align: center;
+        }
+        .diagram-wrapper .mermaid {
+            display: inline-block;
+            min-width: 700px;
+        }
+        .diagram-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0 24px;
+            font-size: 0.92rem;
+        }
+        thead th {
+            background: var(--surface-2);
+            color: var(--accent);
+            font-weight: 600;
+            text-align: left;
+            padding: 12px 16px;
+            border-bottom: 2px solid var(--border);
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+        thead th:first-child { border-radius: 8px 0 0 0; }
+        thead th:last-child { border-radius: 0 8px 0 0; }
+        tbody td {
+            padding: 11px 16px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-muted);
+        }
+        tbody tr:hover { background: rgba(129, 140, 248, 0.04); }
+        tbody td:first-child {
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85em;
+            background: var(--surface-2);
+            padding: 2px 7px;
+            border-radius: 5px;
+            color: var(--cyan);
+            border: 1px solid var(--border);
+        }
+
+        pre {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px 24px;
+            overflow-x: auto;
+            margin: 16px 0 24px;
+            font-size: 0.88rem;
+            line-height: 1.6;
+        }
+        pre code {
+            background: none;
+            border: none;
+            padding: 0;
+            color: var(--text);
+        }
+
+        .callout {
+            background: var(--accent-dim);
+            border-left: 4px solid var(--accent);
+            border-radius: 0 10px 10px 0;
+            padding: 16px 20px;
+            margin: 16px 0 24px;
+            color: var(--text);
+            font-size: 0.92rem;
+        }
+        .callout strong {
+            color: var(--accent);
+        }
+        .callout.green {
+            background: var(--green-dim);
+            border-left-color: var(--green);
+        }
+        .callout.green strong { color: var(--green); }
+        .callout.amber {
+            background: var(--amber-dim);
+            border-left-color: var(--amber);
+        }
+        .callout.amber strong { color: var(--amber); }
+
+        .layer-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 28px;
+            margin: 20px 0;
+            transition: border-color 0.2s;
+        }
+        .layer-card:hover {
+            border-color: var(--accent);
+        }
+        .layer-card h3 {
+            margin-top: 0;
+        }
+        .layer-card .file-link {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.82rem;
+            color: var(--pink);
+            opacity: 0.8;
+        }
+
+        ul, ol {
+            margin: 10px 0 18px 24px;
+            color: var(--text-muted);
+        }
+        li { margin-bottom: 6px; }
+        li strong { color: var(--text); }
+
+        .qa-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            margin: 20px 0;
+        }
+        .qa-item {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px 24px;
+        }
+        .qa-item .question {
+            font-weight: 600;
+            color: var(--accent);
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+        .qa-item .answer {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            line-height: 1.65;
+        }
+        .qa-item .tag {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 10px;
+        }
+        .tag.arch { background: var(--accent-dim); color: var(--accent); }
+        .tag.hybrid { background: rgba(244, 114, 182, 0.12); color: var(--pink); }
+        .tag.ci { background: var(--green-dim); color: var(--green); }
+        .tag.data { background: var(--amber-dim); color: var(--amber); }
+
+        .step-flow {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            margin: 16px 0 24px;
+        }
+        .step-flow .step {
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 14px;
+            font-size: 0.82rem;
+            color: var(--text);
+            font-weight: 500;
+        }
+        .step-flow .arrow {
+            color: var(--accent);
+            font-size: 1.1rem;
+        }
+
+        .compare-table td:nth-child(1) { color: var(--red); }
+        .compare-table td:nth-child(2) { color: var(--green); }
+
+        @media print {
+            body { background: #fff; color: #1a1a2e; }
+            .hero { background: #f8f9fa; border-bottom-color: #dee2e6; }
+            .hero h1 { -webkit-text-fill-color: #4338ca; }
+            .diagram-wrapper, .layer-card, .qa-item, pre { background: #f8f9fa; border-color: #dee2e6; }
+            code { background: #e9ecef; color: #0d6efd; }
+            table thead th { background: #e9ecef; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="hero">
+    <h1>ParaBank QA Automation</h1>
+    <div class="subtitle">Architecture Deep-Dive &amp; Interview Preparation</div>
+    <div class="badge">Senior Automation QE — Technical Interview</div>
+</div>
+
+<div class="container">
+
+    <!-- ==================== HIGH-LEVEL DIAGRAM ==================== -->
+    <h2>🏗️ High-Level Architecture Diagram</h2>
+    <div class="diagram-wrapper">
+        <div class="diagram-title">Framework Layer Dependency Graph</div>
+        <pre class="mermaid">
+graph TD
+    subgraph TestLayer["🧪 Test Layer"]
+        SPEC["parabank-e2e.spec.ts"]
+    end
+
+    subgraph FixtureLayer["🔌 Fixture Layer"]
+        FIX["parabank.fixtures.ts"]
+    end
+
+    subgraph POMLayer["📄 Page Object Model Layer"]
+        BASE["BasePage"]
+        LP["LoginPage"]
+        RP["RegistrationPage"]
+        HP["HomePage"]
+        AOP["AccountsOverviewPage"]
+        OAP["OpenAccountPage"]
+        TFP["TransferFundsPage"]
+        BPP["BillPayPage"]
+    end
+
+    subgraph APILayer["🌐 API Client Layer"]
+        API["ParaBankAPI"]
+    end
+
+    subgraph DataLayer["📦 Data Layer"]
+        UD["user.data.ts"]
+        CONST["constants.ts"]
+    end
+
+    subgraph UtilLayer["🛠️ Utilities"]
+        HELP["helpers.ts"]
+    end
+
+    subgraph CILayer["⚙️ CI/CD &amp; Reporting"]
+        GHA["GitHub Actions"]
+        EMAIL["Email Report Script"]
+    end
+
+    SPEC --> FIX
+    FIX --> LP
+    FIX --> RP
+    FIX --> HP
+    FIX --> AOP
+    FIX --> OAP
+    FIX --> TFP
+    FIX --> BPP
+    FIX --> API
+    LP --> BASE
+    RP --> BASE
+    HP --> BASE
+    AOP --> BASE
+    OAP --> BASE
+    TFP --> BASE
+    BPP --> BASE
+    SPEC --> UD
+    SPEC --> CONST
+    UD --> HELP
+    GHA --> EMAIL
+
+    style TestLayer fill:#1e1b4b,stroke:#818cf8,color:#e2e8f0
+    style FixtureLayer fill:#1a1d2e,stroke:#818cf8,color:#e2e8f0
+    style POMLayer fill:#1a1d2e,stroke:#c084fc,color:#e2e8f0
+    style APILayer fill:#1a1d2e,stroke:#f472b6,color:#e2e8f0
+    style DataLayer fill:#1a1d2e,stroke:#fbbf24,color:#e2e8f0
+    style UtilLayer fill:#1a1d2e,stroke:#34d399,color:#e2e8f0
+    style CILayer fill:#1a1d2e,stroke:#22d3ee,color:#e2e8f0
+        </pre>
+    </div>
+
+    <!-- ==================== FRAMEWORK STACK ==================== -->
+    <h2>1. Framework &amp; Tool Stack</h2>
+    <table>
+        <thead>
+            <tr><th>Concern</th><th>Choice</th><th>Why It Matters</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>Test Runner</strong></td><td>Playwright <code>@playwright/test</code> v1.58</td><td>Built-in auto-wait, trace viewer, multi-browser, parallel execution</td></tr>
+            <tr><td><strong>Language</strong></td><td>TypeScript (CommonJS)</td><td>Type safety, IDE autocomplete, compile-time error catching</td></tr>
+            <tr><td><strong>Env Config</strong></td><td><code>dotenv</code></td><td>Externalises <code>BASE_URL</code> so same tests run against dev / staging / prod</td></tr>
+            <tr><td><strong>Email Reports</strong></td><td><code>resend</code> SDK</td><td>Sends formatted test results from CI after every run</td></tr>
+            <tr><td><strong>CI/CD</strong></td><td>GitHub Actions</td><td>Every push triggers full E2E run on <code>ubuntu-latest</code></td></tr>
+        </tbody>
+    </table>
+
+    <!-- ==================== ARCHITECTURAL LAYERS ==================== -->
+    <h2>2. Architectural Layers (Bottom → Top)</h2>
+
+    <!-- 2.1 Utilities -->
+    <div class="layer-card">
+        <h3>2.1 Utilities Layer</h3>
+        <div class="file-link">src/utils/helpers.ts</div>
+        <p>Pure functions with zero side-effects:</p>
+        <ul>
+            <li><code>randomString(length)</code> — alphanumeric random strings</li>
+            <li><code>randomDigits(length)</code> — numeric-only random strings (phone, SSN, zip)</li>
+            <li><code>formatCurrency(amount)</code> — consistent <code>$X.XX</code> formatting</li>
+        </ul>
+        <div class="callout">
+            <strong>🎤 Interview angle:</strong> Keeps test data generation deterministic in structure but unique per run, avoiding "username already exists" collisions on ParaBank's shared database.
+        </div>
+    </div>
+
+    <!-- 2.2 Data Layer -->
+    <div class="layer-card">
+        <h3>2.2 Data Layer</h3>
+        <div class="file-link">src/data/user.data.ts + src/data/constants.ts</div>
+        <p>Key patterns applied:</p>
+        <ul>
+            <li><strong>TypeScript interfaces</strong> (<code>UserRegistrationData</code>, <code>BillPayeeInfo</code>) provide compile-time contracts for test data shapes</li>
+            <li><strong>Factory function</strong> <code>generateUserData()</code> creates a fresh, unique user on every call — guarantees test <strong>idempotency</strong></li>
+            <li><strong>Constants object</strong> centralises URLs, amounts, and default payee data — single source of truth</li>
+        </ul>
+        <div class="callout amber">
+            <strong>🎤 Interview angle:</strong> "Why not hardcoded strings or a JSON fixture file?" → Uniqueness per run is required because ParaBank's database is shared/public. A static JSON would cause username collisions.
+        </div>
+    </div>
+
+    <!-- 2.3 POM Layer -->
+    <div class="layer-card">
+        <h3>2.3 Page Object Model (POM) Layer</h3>
+        <div class="file-link">src/pages/*.page.ts</div>
+    </div>
+
+    <div class="diagram-wrapper">
+        <div class="diagram-title">POM Class Hierarchy</div>
+        <pre class="mermaid">
+classDiagram
+    class BasePage {
+        +Page page
+        +navigate(path)
+        +getTitle()
+        +expectTitleContains(text)
+        +waitForPageLoad()
+        +headerHomeLink
+        +sidebarAboutUsLink
+        +footerSiteMapLink
+    }
+
+    class LoginPage {
+        +usernameInput
+        +passwordInput
+        +loginButton
+        +goto()
+        +login(username, password)
+        +expectLoginFormVisible()
+    }
+
+    class HomePage {
+        +welcomeMessage
+        +openNewAccountLink
+        +accountsOverviewLink
+        +transferFundsLink
+        +billPayLink
+        +logOutLink
+        +goto()
+        +expectLoggedIn()
+        +expectNavigationMenuVisible()
+        +verifyNavigationLinks()
+        +goToOpenNewAccount()
+        +goToAccountsOverview()
+        +goToTransferFunds()
+        +goToBillPay()
+        +logout()
+    }
+
+    class RegistrationPage {
+        +firstNameInput … confirmPasswordInput
+        +registerButton
+        +goto()
+        +fillRegistrationForm(user)
+        +submitRegistration()
+        +registerUser(user)
+        +expectRegistrationSuccess(username)
+    }
+
+    class OpenAccountPage {
+        +accountTypeSelect
+        +openAccountButton
+        +newAccountId
+        +goto()
+        +openSavingsAccount() string
+        +openCheckingAccount() string
+        +expectAccountOpened()
+        +expectValidAccountNumberString(acct)
+    }
+
+    class AccountsOverviewPage {
+        +accountsTable
+        +accountRows
+        +totalBalance
+        +goto()
+        +getAccountNumber(rowIndex) string
+        +getAccountBalance(rowIndex) string
+        +expectAccountExists(accountNumber)
+        +expectBalanceDetailsDisplayed()
+    }
+
+    class TransferFundsPage {
+        +amountInput
+        +fromAccountSelect
+        +toAccountSelect
+        +transferButton
+        +goto()
+        +transferFunds(amount, from, to)
+        +expectTransferComplete()
+    }
+
+    class BillPayPage {
+        +payeeNameInput … amountInput
+        +fromAccountSelect
+        +sendPaymentButton
+        +goto()
+        +fillBillPayForm(payee)
+        +payBill(payee, fromAccount)
+        +expectPaymentSuccess()
+        +expectPaymentDetails(name, amount)
+    }
+
+    BasePage <|-- LoginPage
+    BasePage <|-- HomePage
+    BasePage <|-- RegistrationPage
+    BasePage <|-- OpenAccountPage
+    BasePage <|-- AccountsOverviewPage
+    BasePage <|-- TransferFundsPage
+    BasePage <|-- BillPayPage
+        </pre>
+    </div>
+
+    <h3>Design Principles Applied</h3>
+    <table>
+        <thead>
+            <tr><th>Principle</th><th>Implementation</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>Inheritance</strong></td><td>All pages extend <code>BasePage</code> which owns shared locators (header, sidebar, footer) and utility methods (<code>navigate</code>, <code>waitForPageLoad</code>)</td></tr>
+            <tr><td><strong>Encapsulation</strong></td><td>Locators are <code>readonly</code> properties declared in constructors — never leaked to tests</td></tr>
+            <tr><td><strong>Single Responsibility</strong></td><td>Each page class owns only its own form fields, actions, and assertions</td></tr>
+            <tr><td><strong>Fluent Assertions</strong></td><td><code>expect*</code> methods live <em>inside</em> the page object, keeping the spec file declarative</td></tr>
+            <tr><td><strong>Strong Typing</strong></td><td>Every method has explicit <code>Promise&lt;void&gt;</code> or <code>Promise&lt;string&gt;</code> return types</td></tr>
+        </tbody>
+    </table>
+
+    <!-- 2.4 API Client -->
+    <div class="layer-card">
+        <h3>2.4 API Client Layer — Hybrid UI + API Pattern</h3>
+        <div class="file-link">src/api/parabank.api.ts</div>
+        <p>The most architecturally interesting piece — a <strong>dual-context</strong> API client:</p>
+    </div>
+
+    <div class="diagram-wrapper">
+        <div class="diagram-title">Dual-Context API Request Flow</div>
+        <pre class="mermaid">
+flowchart LR
+    subgraph ParaBankAPI["ParaBankAPI Class"]
+        REQ["request: APIRequestContext"]
+        PG["page?: Page"]
+    end
+
+    subgraph Decision["Context Selection"]
+        CHECK{"page exists?"}
+    end
+
+    subgraph Contexts["Request Contexts"]
+        PAGEREQ["page.request — inherits browser cookies/session"]
+        ISOREQ["this.request — isolated, no session"]
+    end
+
+    subgraph Server["ParaBank Server"]
+        EP["REST API Endpoints"]
+    end
+
+    REQ --> CHECK
+    PG --> CHECK
+    CHECK -->|Yes| PAGEREQ
+    CHECK -->|No| ISOREQ
+    PAGEREQ --> EP
+    ISOREQ --> EP
+
+    style ParaBankAPI fill:#1a1d2e,stroke:#f472b6,color:#e2e8f0
+    style Decision fill:#232740,stroke:#818cf8,color:#e2e8f0
+    style Contexts fill:#1a1d2e,stroke:#34d399,color:#e2e8f0
+    style Server fill:#1a1d2e,stroke:#fbbf24,color:#e2e8f0
+        </pre>
+    </div>
+
+    <p><strong>Methods provided:</strong></p>
+    <ul>
+        <li><code>registerUser(user, page)</code> — <strong>Hybrid</strong>: navigates browser to establish session, then POSTs form data via <code>page.request</code></li>
+        <li><code>findTransactionsByAmount(accountId, amount)</code> — REST GET with session-aware context fallback</li>
+        <li><code>getAllTransactions(accountId)</code> — REST GET</li>
+        <li><code>expectTransactionsExist(accountId)</code> — Assertion wrapper; validates &amp; returns first transaction amount</li>
+        <li><code>expectTransactionsByAmountValid(accountId, amount)</code> — Full JSON response structure validation</li>
+        <li><code>getAccountDetails(accountId)</code> — REST GET</li>
+    </ul>
+    <div class="callout">
+        <strong>🎤 Interview angle:</strong> "Why accept both <code>request</code> and <code>page</code>?" → Enables <strong>dual-context testing</strong>: pure API tests use isolated <code>request</code>, while UI+API hybrid tests use <code>page.request</code> to share the browser session (cookies).
+    </div>
+
+    <!-- 2.5 Custom Fixtures -->
+    <div class="layer-card">
+        <h3>2.5 Custom Fixtures Layer</h3>
+        <div class="file-link">src/fixtures/parabank.fixtures.ts</div>
+        <p>Extends Playwright's <code>base.test</code> with typed fixtures. Tests import <code>test</code> and <code>expect</code> from this file instead of from <code>@playwright/test</code>.</p>
+
+        <pre><code>export const test = base.extend&lt;ParaBankFixtures&gt;({
+    loginPage:   async ({ page }, use) =&gt; { await use(new LoginPage(page)); },
+    paraBankAPI: async ({ request, page }, use) =&gt; { await use(new ParaBankAPI(request, page)); },
+    // ... 5 more page object fixtures
+});</code></pre>
+    </div>
+
+    <h3>Fixtures vs. <code>beforeEach</code> — Why It Matters</h3>
+    <table class="compare-table">
+        <thead>
+            <tr><th><code>beforeEach</code> Approach</th><th>Fixture Approach ✅</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>All page objects instantiated every test</td><td><strong>Lazy</strong> — only created if the test destructures it</td></tr>
+            <tr><td>Shared state risk between tests</td><td>Playwright manages lifecycle per-test → <strong>isolation</strong></td></tr>
+            <tr><td>Setup/teardown scattered in test files</td><td><strong>Encapsulated</strong> inside the fixture definition</td></tr>
+            <tr><td>Harder to compose for complex scenarios</td><td>Fixtures can <strong>depend on other fixtures</strong> declaratively</td></tr>
+        </tbody>
+    </table>
+
+    <!-- 2.6 Test Spec -->
+    <div class="layer-card">
+        <h3>2.6 Test Spec Layer</h3>
+        <div class="file-link">tests/parabank-e2e.spec.ts</div>
+        <p>A single, complete <strong>E2E user journey</strong> organized with <code>test.step()</code> blocks:</p>
+    </div>
+
+    <div class="step-flow">
+        <div class="step">1. Navigate to ParaBank</div><span class="arrow">→</span>
+        <div class="step">2. Register New User</div><span class="arrow">→</span>
+        <div class="step">3. Login</div><span class="arrow">→</span>
+        <div class="step">4. Verify Navigation</div><span class="arrow">→</span>
+        <div class="step">5. Create Savings Account</div><span class="arrow">→</span>
+        <div class="step">6. Validate Accounts Overview</div><span class="arrow">→</span>
+        <div class="step">7. Transfer Funds</div><span class="arrow">→</span>
+        <div class="step">8. Pay Bill</div><span class="arrow">→</span>
+        <div class="step">9. API: Validate Transactions (JSON)</div>
+    </div>
+
+    <div class="callout green">
+        <strong>🎤 Interview angle:</strong> This is a <strong>complete user journey test</strong>, not isolated unit tests. The <code>test.step()</code> blocks provide structured grouping in Playwright's HTML report while preserving state (account numbers, session) across steps. Splitting into separate tests would require duplicating expensive setup or relying on API shortcuts.
+    </div>
+
+    <!-- ==================== CONFIGURATION ==================== -->
+    <h2>3. Configuration Strategy</h2>
+    <p>Key settings from <code>playwright.config.ts</code>:</p>
+    <table>
+        <thead>
+            <tr><th>Setting</th><th>Value</th><th>Rationale</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><code>fullyParallel</code></td><td><code>false</code></td><td>ParaBank is a shared public server — parallel tests cause race conditions</td></tr>
+            <tr><td><code>workers</code></td><td><code>1</code></td><td>Sequential execution avoids hammering the fragile demo server</td></tr>
+            <tr><td><code>retries</code></td><td><code>2</code> (CI only)</td><td>Auto-retries catch flaky failures; flagged in report</td></tr>
+            <tr><td><code>trace</code></td><td><code>on-first-retry</code></td><td>Saves storage; traces only generated when debugging a failure</td></tr>
+            <tr><td><code>screenshot</code></td><td><code>only-on-failure</code></td><td>Captures evidence without bloating artifacts</td></tr>
+            <tr><td><code>actionTimeout</code></td><td><code>15s</code></td><td>Per-action timeout for slow server responses</td></tr>
+            <tr><td><code>navigationTimeout</code></td><td><code>30s</code></td><td>Generous timeout for full page loads</td></tr>
+            <tr><td><code>timeout</code></td><td><code>90s</code></td><td>Overall test timeout for the full user journey</td></tr>
+            <tr><td><code>reporter</code></td><td><code>html</code> + <code>list</code> + <code>json</code></td><td>Human-readable console, visual HTML report, machine-parseable JSON</td></tr>
+            <tr><td><code>projects</code></td><td>Google Chrome only</td><td>Single-browser strategy matching the most common real-user browser</td></tr>
+        </tbody>
+    </table>
+
+    <!-- ==================== CI/CD PIPELINE ==================== -->
+    <h2>4. CI/CD Pipeline</h2>
+
+    <div class="diagram-wrapper">
+        <div class="diagram-title">GitHub Actions Workflow</div>
+        <pre class="mermaid">
+flowchart LR
+    A["🔀 git push"] --> B["📥 Checkout"]
+    B --> C["📦 Setup Node.js LTS"]
+    C --> D["📋 npm ci"]
+    D --> E["🌐 Install Chrome"]
+    E --> F["🧪 Run Playwright Tests"]
+    F --> G["📧 Generate + Send Email Report"]
+    G --> H["📤 Upload HTML Report Artifact"]
+
+    style A fill:#232740,stroke:#818cf8,color:#e2e8f0
+    style F fill:#1e1b4b,stroke:#c084fc,color:#e2e8f0
+    style G fill:#232740,stroke:#34d399,color:#e2e8f0
+    style H fill:#232740,stroke:#fbbf24,color:#e2e8f0
+        </pre>
+    </div>
+
+    <p><strong>Key decisions:</strong></p>
+    <ul>
+        <li>Triggers on <strong>every push</strong> (not just PRs) — aggressive quality gate</li>
+        <li>Email report via <strong>Resend API</strong> with pass/fail/flaky/retry summary</li>
+        <li>HTML report artifact retained for <strong>30 days</strong></li>
+        <li>Email step uses <code>if: always()</code> — report is sent even if tests fail</li>
+        <li>The <code>generate-email-report.js</code> script parses the JSON reporter output, formats results, and sends via Resend SDK</li>
+    </ul>
+
+    <!-- ==================== INTERVIEW Q&A ==================== -->
+    <h2>5. 🎤 Potential Interview Questions &amp; Answers</h2>
+
+    <div class="qa-grid">
+        <div class="qa-item">
+            <span class="tag arch">Architecture</span>
+            <div class="question">Q1: "Why did you choose the Page Object Model?"</div>
+            <div class="answer"><strong>Separation of concerns.</strong> Locators and page-specific actions live in page classes, while tests remain declarative and read like user stories. If a UI element changes (e.g., a selector update), you fix it in one place — the page object — not across 20 test files.</div>
+        </div>
+
+        <div class="qa-item">
+            <span class="tag arch">Architecture</span>
+            <div class="question">Q2: "Why use inheritance with BasePage instead of composition?"</div>
+            <div class="answer"><strong>DRY principle.</strong> All pages share header, sidebar, and footer navigation elements. Inheritance eliminates duplicating those 15+ locators across 7 page classes. Composition could also work, but inheritance is simpler here since every page truly "is-a" page with shared navigation — it's not forced polymorphism.</div>
+        </div>
+
+        <div class="qa-item">
+            <span class="tag arch">Architecture</span>
+            <div class="question">Q3: "Why custom Playwright fixtures over <code>beforeEach</code>?"</div>
+            <div class="answer"><strong>Three reasons:</strong> (1) <em>Lazy initialization</em> — fixtures are only created if the test destructures them, saving memory. (2) <em>Isolation</em> — Playwright manages the lifecycle per-test, preventing shared state leakage. (3) <em>Encapsulation</em> — setup/teardown logic stays in the fixture definition, keeping test files clean.</div>
+        </div>
+
+        <div class="qa-item">
+            <span class="tag arch">Architecture</span>
+            <div class="question">Q4: "Why a single long test instead of multiple small tests?"</div>
+            <div class="answer"><strong>State dependency chain.</strong> This test simulates a complete user journey: registration → login → account creation → transactions. Each step depends on the previous (e.g., you need the savings account number to transfer funds). Splitting would require duplicating expensive setup (registration + login) in every test, or using API shortcuts that defeat the purpose of E2E validation.</div>
+        </div>
+
+        <div class="qa-item">
+            <span class="tag hybrid">Hybrid UI + API</span>
+            <div class="question">Q5: "Explain the dual-context API pattern with <code>page.request</code> vs <code>request</code>."</div>
+            <div class="answer"><code>page.request</code> shares the browser's cookies and session, so API calls are authenticated as the logged-in UI user. The standalone <code>request</code> is isolated and stateless. The <code>ParaBankAPI</code> class checks <code>this.page ? this.page.request : this.request</code>, enabling it to work in both UI-coupled and pure API test contexts without code duplication.</div>
+        </div>
+
+        <div class="qa-item">
+            <span class="tag hybrid">Hybrid UI + API</span>
+            <div class="question">Q6: "Why validate transaction data via API instead of the UI?"</div>
+            <div class="answer"><strong>Speed + reliability.</strong> UI assertions on transaction tables can be flaky (pagination, rendering delays, AJAX timing). The API gives raw JSON data instantly. We leverage the active browser session via <code>page.request</code> so the API call is authenticated — getting the best of both worlds.</div>
+        </div>
+
+        <div class="qa-item">
+            <span class="tag ci">CI / Reliability</span>
+            <div class="question">Q7: "How do you handle flaky tests?"</div>
+            <div class="answer"><strong>Multi-layered approach:</strong> (1) <code>retries: 2</code> in CI auto-retries failures. (2) <code>trace: 'on-first-retry'</code> captures a Playwright trace on the retry attempt for debugging. (3) The JSON reporter + email script explicitly flags flaky tests (passed on retry) in the report. (4) Sequential execution (<code>workers: 1</code>) eliminates parallelism-induced flakiness.</div>
+        </div>
+
+        <div class="qa-item">
+            <span class="tag ci">CI / Reliability</span>
+            <div class="question">Q8: "Why <code>fullyParallel: false</code> and <code>workers: 1</code>?"</div>
+            <div class="answer"><strong>Context-aware decision.</strong> ParaBank is a shared public demo server with an unoptimized database. Parallel tests cause race conditions (e.g., locking accounts, data collisions). In an enterprise environment with isolated test databases or test data management, this would absolutely be <code>true</code> with multiple workers.</div>
+        </div>
+
+        <div class="qa-item">
+            <span class="tag ci">CI / Reliability</span>
+            <div class="question">Q9: "Walk me through your CI/CD reporting strategy."</div>
+            <div class="answer"><strong>Three-format reporter:</strong> (1) <code>list</code> for real-time console output during CI. (2) <code>html</code> for a rich visual report uploaded as a GitHub artifact (30-day retention). (3) <code>json</code> which is parsed by <code>generate-email-report.js</code> to build a structured email sent via Resend API. The email includes pass/fail counts, error messages, attachment links, and flaky/retry summaries. The email step runs with <code>if: always()</code> so reports are sent even on failure.</div>
+        </div>
+
+        <div class="qa-item">
+            <span class="tag data">Data Management</span>
+            <div class="question">Q10: "How do you ensure test idempotency?"</div>
+            <div class="answer"><code>generateUserData()</code> creates a unique user per run with a randomised username (e.g., <code>parauser849271635</code>), SSN, phone, and zip code. No hardcoded users. This means the test can run 1,000 times against the same environment without "Username already exists" errors. Combined with <code>clearCookies()</code> between registration and login, each run is fully self-contained.</div>
+        </div>
+    </div>
+
+    <!-- ==================== FILE MAP ==================== -->
+    <h2>6. Complete File Map</h2>
+    <pre><code>parabank-qa-automation/
+├── .env / .env.example              # Environment config (BASE_URL)
+├── .github/workflows/
+│   └── playwright.yml               # CI pipeline — runs on every push
+├── scripts/
+│   └── generate-email-report.js     # Parses test-results.json → sends email via Resend
+├── src/
+│   ├── api/
+│   │   └── parabank.api.ts          # Hybrid UI+API client with dual-context support
+│   ├── data/
+│   │   ├── constants.ts             # URLs, amounts, default payee data
+│   │   └── user.data.ts             # UserRegistrationData interface + factory function
+│   ├── fixtures/
+│   │   └── parabank.fixtures.ts     # Custom Playwright fixtures (extends base.test)
+│   ├── pages/
+│   │   ├── base.page.ts             # BasePage — shared nav locators + utility methods
+│   │   ├── login.page.ts            # Login form interactions
+│   │   ├── registration.page.ts     # Registration form + success assertions
+│   │   ├── home.page.ts             # Post-login nav hub + menu verification
+│   │   ├── accounts-overview.page.ts # Account table + balance assertions
+│   │   ├── open-account.page.ts     # Savings/Checking account creation
+│   │   ├── transfer-funds.page.ts   # Fund transfer form + success assertion
+│   │   └── bill-pay.page.ts         # Bill payment form + payee validation
+│   └── utils/
+│       └── helpers.ts               # randomString, randomDigits, formatCurrency
+├── tests/
+│   └── parabank-e2e.spec.ts         # Single E2E user journey with test.step() blocks
+├── playwright.config.ts             # Framework configuration
+├── package.json                     # Dependencies: Playwright, dotenv, resend
+└── README.md                        # Setup & usage instructions</code></pre>
+
+    <br>
+    <div class="callout green">
+        <strong>✅ Summary:</strong> This framework demonstrates a mature, production-grade test automation architecture using Playwright with TypeScript. It combines the Page Object Model with custom fixtures, a hybrid UI+API testing strategy, dynamic test data generation, and a fully automated CI/CD pipeline with email reporting — all key competencies for a Senior Automation QE role.
+    </div>
+
+</div>
+
+<script>
+    mermaid.initialize({
+        startOnLoad: true,
+        theme: 'dark',
+        themeVariables: {
+            primaryColor: '#232740',
+            primaryTextColor: '#e2e8f0',
+            primaryBorderColor: '#818cf8',
+            lineColor: '#818cf8',
+            secondaryColor: '#1a1d2e',
+            tertiaryColor: '#1e1b4b',
+            fontSize: '15px',
+            fontFamily: 'Inter, sans-serif',
+        },
+        flowchart: {
+            useMaxWidth: false,
+            htmlLabels: true,
+            curve: 'basis',
+            padding: 20,
+        },
+        classDiagram: {
+            useMaxWidth: false,
+        },
+    });
+</script>
+
+</body>
+</html>

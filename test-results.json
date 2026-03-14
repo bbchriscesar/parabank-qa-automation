@@ -1,0 +1,171 @@
+{
+  "config": {
+    "configFile": "/home/christiannecesar/Desktop/CodeChallenge/parabank-qa-automation/playwright.config.ts",
+    "rootDir": "/home/christiannecesar/Desktop/CodeChallenge/parabank-qa-automation/tests",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/home/christiannecesar/Desktop/CodeChallenge/parabank-qa-automation/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "Google Chrome",
+        "name": "Google Chrome",
+        "testDir": "/home/christiannecesar/Desktop/CodeChallenge/parabank-qa-automation/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 90000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "html",
+        {
+          "open": "never"
+        }
+      ],
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "runAgents": "none",
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.58.2",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "parabank-e2e.spec.ts",
+      "file": "parabank-e2e.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "ParaBank E2E UI Test Suite",
+          "file": "parabank-e2e.spec.ts",
+          "line": 5,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Complete ParaBank user journey",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Google Chrome",
+                  "projectName": "Google Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 31436,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "\n✅ User created — Username: parauser229407628 | Password: Test@1234\n\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "steps": [
+                        {
+                          "title": "Navigate to ParaBank application",
+                          "duration": 5199
+                        },
+                        {
+                          "title": "Create a new user from user registration page",
+                          "duration": 1679
+                        },
+                        {
+                          "title": "Login with newly created user",
+                          "duration": 4911
+                        },
+                        {
+                          "title": "Verify global navigation menu is working as expected",
+                          "duration": 7724
+                        },
+                        {
+                          "title": "Create a Savings account and capture account number",
+                          "duration": 4101
+                        },
+                        {
+                          "title": "Validate Accounts Overview displays balance details",
+                          "duration": 1561
+                        },
+                        {
+                          "title": "Transfer funds from Savings account to another account",
+                          "duration": 2221
+                        },
+                        {
+                          "title": "Pay a bill using the Savings account",
+                          "duration": 2979
+                        },
+                        {
+                          "title": "Search transactions and validate JSON response via API",
+                          "duration": 815
+                        }
+                      ],
+                      "startTime": "2026-03-05T03:09:28.271Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "917c03bf062ed718e41b-7e6d6fbe868b3f7c630b",
+              "file": "parabank-e2e.spec.ts",
+              "line": 6,
+              "column": 9
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-03-05T03:09:26.479Z",
+    "duration": 33637.656,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

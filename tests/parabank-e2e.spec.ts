@@ -82,10 +82,7 @@ test.describe('ParaBank E2E UI Test Suite', () => {
         });
 
         await test.step('Search transactions and validate JSON response via API', async () => {
-            // First, get all transactions for the account to determine a searchable amount.
-            // ParaBank does not always index bill pay debits as findable transactions,
-            // so we first confirm what transactions exist, then use the Find Transactions
-            // by Amount API to search and validate the JSON response.
+            
             const searchAmount = await paraBankAPI.expectTransactionsExist(savingsAccountNumber);
 
             await paraBankAPI.expectTransactionsByAmountValid(savingsAccountNumber, searchAmount);

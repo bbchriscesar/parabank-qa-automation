@@ -1,0 +1,14 @@
+Playwright UI + API Test Execution Report
+=========================================
+
+Total tests executed: 1
+Passed tests: 1
+Failed tests: 0
+Flaky tests: 0
+Skipped tests: 0
+
+✅ All tests passed successfully!
+
+No retries or flaky tests detected.
+
+View the full GitHub Actions Run: https://github.com/unknown-repo/actions/runs/unknown-run-id

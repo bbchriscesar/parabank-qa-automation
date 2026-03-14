@@ -42,6 +42,12 @@ type ParaBankFixtures = {
 /**
  * Extend the base Playwright test with our custom fixtures.
  * Each fixture provides a page object instance tied to the current page.
+ *
+ * [INTERVIEW Q]: Why use custom fixtures instead of `beforeEach` to initialize Page Objects?
+ * [ANSWER]:
+ * 1. Lazy Initialization: Fixtures are only created if the specific test requests them in its arguments. `beforeEach` initializes everything, every time, wasting memory.
+ * 2. Isolation: Playwright manages the lifecycle of fixtures per test, ensuring parallel safety and no shared state leakage between tests.
+ * 3. Encapsulation: Setup and teardown logic (if needed) is encapsulated in the fixture itself, keeping test files incredibly clean.
  */
 export const test = base.extend<ParaBankFixtures>({
     loginPage: async ({ page }, use) => {
@@ -72,6 +78,8 @@ export const test = base.extend<ParaBankFixtures>({
         await use(new BillPayPage(page));
     },
 
+    // [INTERVIEW Q]: I see you pass `request` and `page` to `paraBankAPI`. Why both?
+    // [ANSWER]: `request` is the isolated APIRequestContext for pure API calls. Passing `page` allows the API class to optionally use `page.request`, which inherits the browser's context (cookies/session), enabling hybrid UI/API flows (like authenticating via UI, then verifying via API).
     paraBankAPI: async ({ request, page }, use) => {
         await use(new ParaBankAPI(request, page));
     },
